@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"os/signal"
 	"syscall"
 
@@ -38,15 +39,13 @@ func main() {
 		fmt.Println("error opening connection,", err)
 		return
 	}
+	defer dg.Close()
 
 	// Wait here until CTRL-C or other term signal is received.
 	fmt.Println("Bot is now running.  Press CTRL-C to exit.")
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	<-sc
-
-	// Cleanly close down the Discord session.
-	dg.Close()
 }
 
 // This function will be called (due to AddHandler above) every time a new
@@ -65,5 +64,15 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	// If the message is "pong" reply with "Ping!"
 	if m.Content == "pong" {
 		s.ChannelMessageSend(m.ChannelID, "Ping!")
+	}
+
+	if m.Content == "enshrouded_restart" {
+		output, err := exec.Command("enshrouded_restart").Output()
+		if err != nil {
+			fmt.Printf("Error executing enshrouded_restart: %s", err.Error())
+			return
+		}
+		fmt.Printf("%s", output)
+		s.ChannelMessageSend(m.ChannelID, "Enshrouded restarted !")
 	}
 }

@@ -13,3 +13,5 @@ https://github.com/golang/vscode-go/blob/master/docs/debugging.md
 ```sh
 go fmt # to format
 ```
+
+https://transform.tools/json-to-go
