@@ -6,3 +6,10 @@ go run .
 
 go: to add module requirements and sums:
 	go mod tidy
+
+vscode debug
+https://github.com/golang/vscode-go/blob/master/docs/debugging.md
+
+```sh
+go fmt # to format
+```
