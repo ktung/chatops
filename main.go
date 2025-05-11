@@ -13,6 +13,7 @@ import (
 )
 
 func main() {
+
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
@@ -67,12 +68,15 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	if m.Content == "enshrouded_restart" {
-		output, err := exec.Command("enshrouded_restart").Output()
+		gameServersCmdPath := os.Getenv("GAME_SERVERS_CMD_PATH")
+
+		cmd := exec.Command("powershell", "-WindowStyle", "Hidden", "-Command", gameServersCmdPath+"enshrouded_restart.ps1")
+		err := cmd.Run()
 		if err != nil {
 			fmt.Printf("Error executing enshrouded_restart: %s", err.Error())
+			s.ChannelMessageSend(m.ChannelID, "Enshrouded restart error !")
 			return
 		}
-		fmt.Printf("%s", output)
 		s.ChannelMessageSend(m.ChannelID, "Enshrouded restarted !")
 	}
 }
