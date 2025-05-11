@@ -79,4 +79,16 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 		s.ChannelMessageSend(m.ChannelID, "Enshrouded restarted !")
 	}
+
+	if m.Content == "enshrouded_info" {
+		gameServersCmdPath := os.Getenv("GAME_SERVERS_CMD_PATH")
+
+		output, err := exec.Command("powershell", "-WindowStyle", "Hidden", "-Command", gameServersCmdPath+"enshrouded_info.ps1").Output()
+		if err != nil {
+			fmt.Printf("Error executing enshrouded_info: %s", err.Error())
+			s.ChannelMessageSend(m.ChannelID, "Enshrouded restart error !")
+			return
+		}
+		s.ChannelMessageSend(m.ChannelID, string(output))
+	}
 }
