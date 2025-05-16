@@ -1,0 +1,12 @@
+- [ ] help command : print all available commands
+- [ ] Commands for game servers
+  - [ ] enshrouded restart
+  - [ ] enshourded info
+  - [ ] enshrouded restart
+  - [ ] enshourded info
+- [ ] Pomodoro ?
+  - [ ] poke me in X mins
+- [ ] weather
+  - [ ] https://api.windy.com/point-forecast/docs
+  - [ ] https://openweathermap.org/api
+- [ ] CADEUR
