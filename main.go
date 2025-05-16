@@ -4,12 +4,14 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/exec"
 	"os/signal"
 	"syscall"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/joho/godotenv"
+
+	"chatops/internal/bot"
+	"chatops/internal/gameserver"
 )
 
 func main() {
@@ -53,67 +55,42 @@ func main() {
 // message is created on any channel that the authenticated bot has access to.
 func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	// Ignore all messages created by the bot itself
-	// This isn't required in this specific example but it's a good practice.
 	if m.Author.ID == s.State.User.ID {
 		return
 	}
-	// If the message is "ping" reply with "Pong!"
-	if m.Content == "ping" {
-		s.ChannelMessageSend(m.ChannelID, "Pong!")
-	}
 
-	// If the message is "pong" reply with "Ping!"
-	if m.Content == "pong" {
-		s.ChannelMessageSend(m.ChannelID, "Ping!")
-	}
+	router := bot.NewCommandRouter()
+	serverManager := gameserver.NewServerManager(os.Getenv("GAME_SERVERS_CMD_PATH"))
 
-	if m.Content == "enshrouded_restart" {
-		gameServersCmdPath := os.Getenv("GAME_SERVERS_CMD_PATH")
+	// Register basic commands
+	router.Register("ping", func(s *discordgo.Session, m *discordgo.MessageCreate) error {
+		_, err := s.ChannelMessageSend(m.ChannelID, "Pong!")
+		return err
+	})
 
-		cmd := exec.Command("powershell", "-WindowStyle", "Hidden", "-Command", gameServersCmdPath+"enshrouded_restart.ps1")
-		err := cmd.Run()
+	router.Register("pong", func(s *discordgo.Session, m *discordgo.MessageCreate) error {
+		_, err := s.ChannelMessageSend(m.ChannelID, "Ping!")
+		return err
+	})
+
+	// Register game server commands
+	router.Register("enshrouded_restart", createServerHandler(s, m, serverManager, "enshrouded", "restart"))
+	router.Register("enshrouded_info", createServerHandler(s, m, serverManager, "enshrouded", "info"))
+	router.Register("palserver_restart", createServerHandler(s, m, serverManager, "palserver", "restart"))
+	router.Register("palserver_info", createServerHandler(s, m, serverManager, "palserver", "info"))
+
+	router.Handle(s, m)
+}
+
+func createServerHandler(s *discordgo.Session, m *discordgo.MessageCreate, manager *gameserver.ServerManager, serverType, action string) bot.CommandHandler {
+	return func(s *discordgo.Session, m *discordgo.MessageCreate) error {
+		output, err := manager.ExecuteCommand(serverType, action)
 		if err != nil {
-			fmt.Printf("Error executing enshrouded_restart: %s", err.Error())
-			s.ChannelMessageSend(m.ChannelID, "Enshrouded restart error !")
-			return
+			log.Printf("Error executing %s_%s: %s", serverType, action, err)
+			_, err = s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("%s %s error!", serverType, action))
+			return err
 		}
-		s.ChannelMessageSend(m.ChannelID, "Enshrouded restarted !")
-	}
-
-	if m.Content == "enshrouded_info" {
-		gameServersCmdPath := os.Getenv("GAME_SERVERS_CMD_PATH")
-
-		output, err := exec.Command("powershell", "-WindowStyle", "Hidden", "-Command", gameServersCmdPath+"enshrouded_info.ps1").Output()
-		if err != nil {
-			fmt.Printf("Error executing enshrouded_info: %s", err.Error())
-			s.ChannelMessageSend(m.ChannelID, "Enshrouded info error !")
-			return
-		}
-		s.ChannelMessageSend(m.ChannelID, string(output))
-	}
-
-	if m.Content == "palserver_restart" {
-		gameServersCmdPath := os.Getenv("GAME_SERVERS_CMD_PATH")
-
-		cmd := exec.Command("powershell", "-WindowStyle", "Hidden", "-Command", gameServersCmdPath+"palserver_restart.ps1")
-		err := cmd.Run()
-		if err != nil {
-			fmt.Printf("Error executing palserver_restart: %s", err.Error())
-			s.ChannelMessageSend(m.ChannelID, "Palserver restart error !")
-			return
-		}
-		s.ChannelMessageSend(m.ChannelID, "Palserver restarted !")
-	}
-
-	if m.Content == "palserver_info" {
-		gameServersCmdPath := os.Getenv("GAME_SERVERS_CMD_PATH")
-
-		output, err := exec.Command("powershell", "-WindowStyle", "Hidden", "-Command", gameServersCmdPath+"palserver_info.ps1").Output()
-		if err != nil {
-			fmt.Printf("Error executing palserver_info: %s", err.Error())
-			s.ChannelMessageSend(m.ChannelID, "Palserver info error !")
-			return
-		}
-		s.ChannelMessageSend(m.ChannelID, string(output))
+		_, err = s.ChannelMessageSend(m.ChannelID, output)
+		return err
 	}
 }
