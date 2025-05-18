@@ -50,6 +50,6 @@ func messageCreateHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	router := cmds.RouterCommands()
+	router := cmds.NewRouterCommands()
 	router.Handle(s, m)
 }
