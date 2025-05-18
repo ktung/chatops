@@ -15,6 +15,8 @@ type CommandsMap struct {
 func NewRouterCommands() *CommandsMap {
 	router := &CommandsMap{
 		handlers: map[string]CommandHandler{
+			"work":               WorkCommand,
+			"break":              BreakCommand,
 			"ping":               PingCommand,
 			"pong":               PongCommand,
 			"enshrouded_info":    EnshroudedInfoCommand,

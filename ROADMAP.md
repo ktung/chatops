@@ -1,11 +1,10 @@
-- [ ] help command : print all available commands
-- [ ] Commands for game servers
-  - [ ] enshrouded restart
-  - [ ] enshourded info
-  - [ ] enshrouded restart
-  - [ ] enshourded info
-- [ ] Pomodoro ?
-  - [ ] poke me in X mins
+- [x] help command : print all available commands
+- [x] Commands for game servers
+  - [x] enshrouded restart
+  - [x] enshourded info
+  - [x] enshrouded restart
+  - [x] enshourded info
+- [x] Pomodoro 60/15
 - [ ] weather
   - [ ] https://api.windy.com/point-forecast/docs
   - [ ] https://openweathermap.org/api
