@@ -17,8 +17,6 @@ func NewRouterCommands() *CommandsMap {
 		handlers: map[string]CommandHandler{
 			"work":               WorkCommand,
 			"break":              BreakCommand,
-			"ping":               PingCommand,
-			"pong":               PongCommand,
 			"enshrouded_info":    EnshroudedInfoCommand,
 			"enshrouded_restart": EnshroudedRestartCommand,
 			"palserver_info":     PalworldInfoCommand,
