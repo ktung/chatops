@@ -22,14 +22,17 @@ func PongCommand(s *discordgo.Session, m *discordgo.MessageCreate) error {
 	return err
 }
 
-func HelpCommand(s *discordgo.Session, m *discordgo.MessageCreate) error {
-	helpMessage := "Available commands:\n"
-	for command := range NewRouterCommands().handlers {
-		helpMessage += "- " + command + "\n"
+func NewHelpCommand(router *CommandsMap) CommandHandler {
+	return func(s *discordgo.Session, m *discordgo.MessageCreate) error {
+		helpMessage := "Available commands:\n"
+		for _, command := range router.GetAllCommands() {
+				helpMessage += "- " + command + "\n"
+		}
+
+		_, err := s.ChannelMessageSend(m.ChannelID, helpMessage)
+		if err != nil {
+				log.Printf("Error sending Help message: %v", err)
+		}
+		return err
 	}
-	_, err := s.ChannelMessageSend(m.ChannelID, helpMessage)
-	if err != nil {
-		log.Printf("Error sending Help message: %v", err)
-	}
-	return err
 }

@@ -13,9 +13,8 @@ type CommandsMap struct {
 }
 
 func NewRouterCommands() *CommandsMap {
-	return &CommandsMap{
+	router := &CommandsMap{
 		handlers: map[string]CommandHandler{
-			"help":               HelpCommand,
 			"ping":               PingCommand,
 			"pong":               PongCommand,
 			"enshrouded_info":    EnshroudedInfoCommand,
@@ -24,6 +23,9 @@ func NewRouterCommands() *CommandsMap {
 			"palserver_restart":  PalworldRestartCommand,
 		},
 	}
+
+	router.handlers["help"] = NewHelpCommand(router)
+	return router
 }
 
 func (c *CommandsMap) Handle(s *discordgo.Session, m *discordgo.MessageCreate) {
@@ -32,4 +34,12 @@ func (c *CommandsMap) Handle(s *discordgo.Session, m *discordgo.MessageCreate) {
 			log.Printf("Error handling command: %v", err)
 		}
 	}
+}
+
+func (c *CommandsMap) GetAllCommands() []string {
+	commands := make([]string, 0, len(c.handlers))
+	for command := range c.handlers {
+		commands = append(commands, command)
+	}
+	return commands
 }
