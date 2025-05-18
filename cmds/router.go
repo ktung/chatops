@@ -12,7 +12,7 @@ type CommandsMap struct {
 	handlers map[string]CommandHandler
 }
 
-func RouterCommands() *CommandsMap {
+func NewRouterCommands() *CommandsMap {
 	return &CommandsMap{
 		handlers: map[string]CommandHandler{
 			"help":               HelpCommand,

@@ -24,7 +24,7 @@ func PongCommand(s *discordgo.Session, m *discordgo.MessageCreate) error {
 
 func HelpCommand(s *discordgo.Session, m *discordgo.MessageCreate) error {
 	helpMessage := "Available commands:\n"
-	for command := range RouterCommands().handlers {
+	for command := range NewRouterCommands().handlers {
 		helpMessage += "- " + command + "\n"
 	}
 	_, err := s.ChannelMessageSend(m.ChannelID, helpMessage)
