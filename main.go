@@ -12,6 +12,8 @@ import (
 	"github.com/joho/godotenv"
 )
 
+var router *cmds.CommandsMap
+
 func main() {
 
 	err := godotenv.Load()
@@ -29,6 +31,7 @@ func main() {
 	// listent to GuildMessages only, see https://discord.com/developers/docs/events/gateway#gateway-intents
 	discordSession.Identify.Intents = discordgo.IntentsGuildMessages
 
+	router = cmds.NewRouterCommands()
 	discordSession.AddHandler(messageCreateHandler)
 
 	err = discordSession.Open()
@@ -50,6 +53,5 @@ func messageCreateHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	router := cmds.NewRouterCommands()
 	router.Handle(s, m)
 }
