@@ -1,6 +1,7 @@
 package cmds
 
 import (
+	"chatops/internal"
 	"fmt"
 	"os"
 	"os/exec"
@@ -10,10 +11,11 @@ import (
 
 func EnshroudedInfoCommand(s *discordgo.Session, m *discordgo.MessageCreate) error {
 	gameServersCmdPath := os.Getenv("GAME_SERVERS_CMD_PATH")
+	cmd := gameServersCmdPath + "enshrouded_info.ps1"
 
-	output, err := exec.Command("powershell", "-WindowStyle", "Hidden", "-Command", gameServersCmdPath+"enshrouded_info.ps1").Output()
+	output, err := internal.ExecutePowerShellCommand(cmd)
 	if err != nil {
-		fmt.Printf("Error executing enshrouded_info: %s", err.Error())
+		fmt.Printf("Error executing %s: %s", cmd, err.Error())
 		_, err := s.ChannelMessageSend(m.ChannelID, "Enshrouded info error !")
 		if err != nil {
 			fmt.Printf("Error sending message: %s", err.Error())
