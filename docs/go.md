@@ -15,3 +15,5 @@ go fmt # to format
 ```
 
 https://transform.tools/json-to-go
+
+https://go.dev/doc/comment

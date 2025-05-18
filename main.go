@@ -1,10 +1,10 @@
 package main
 
 import (
+	"chatops/cmds"
 	"fmt"
 	"log"
 	"os"
-	"os/exec"
 	"os/signal"
 	"syscall"
 
@@ -21,26 +21,21 @@ func main() {
 
 	discordToken := os.Getenv("DISCORD_TOKEN")
 
-	// Create a new Discord session using the provided bot token.
-	dg, err := discordgo.New("Bot " + discordToken)
+	discordSession, err := discordgo.New("Bot " + discordToken)
 	if err != nil {
-		fmt.Println("error creating Discord session,", err)
-		return
+		log.Fatal("Error creating Discord session,", err)
 	}
 
-	// Register the messageCreate func as a callback for MessageCreate events.
-	dg.AddHandler(messageCreate)
+	// listent to GuildMessages only, see https://discord.com/developers/docs/events/gateway#gateway-intents
+	discordSession.Identify.Intents = discordgo.IntentsGuildMessages
 
-	// In this example, we only care about receiving message events.
-	dg.Identify.Intents = discordgo.IntentsGuildMessages
+	discordSession.AddHandler(messageCreateHandler)
 
-	// Open a websocket connection to Discord and begin listening.
-	err = dg.Open()
+	err = discordSession.Open()
 	if err != nil {
-		fmt.Println("error opening connection,", err)
-		return
+		log.Fatal("Error opening connection,", err)
 	}
-	defer dg.Close()
+	defer discordSession.Close()
 
 	// Wait here until CTRL-C or other term signal is received.
 	fmt.Println("Bot is now running.  Press CTRL-C to exit.")
@@ -49,71 +44,12 @@ func main() {
 	<-sc
 }
 
-// This function will be called (due to AddHandler above) every time a new
-// message is created on any channel that the authenticated bot has access to.
-func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
+func messageCreateHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	// Ignore all messages created by the bot itself
-	// This isn't required in this specific example but it's a good practice.
 	if m.Author.ID == s.State.User.ID {
 		return
 	}
-	// If the message is "ping" reply with "Pong!"
-	if m.Content == "ping" {
-		s.ChannelMessageSend(m.ChannelID, "Pong!")
-	}
 
-	// If the message is "pong" reply with "Ping!"
-	if m.Content == "pong" {
-		s.ChannelMessageSend(m.ChannelID, "Ping!")
-	}
-
-	if m.Content == "enshrouded_restart" {
-		gameServersCmdPath := os.Getenv("GAME_SERVERS_CMD_PATH")
-
-		cmd := exec.Command("powershell", "-WindowStyle", "Hidden", "-Command", gameServersCmdPath+"enshrouded_restart.ps1")
-		err := cmd.Run()
-		if err != nil {
-			fmt.Printf("Error executing enshrouded_restart: %s", err.Error())
-			s.ChannelMessageSend(m.ChannelID, "Enshrouded restart error !")
-			return
-		}
-		s.ChannelMessageSend(m.ChannelID, "Enshrouded restarted !")
-	}
-
-	if m.Content == "enshrouded_info" {
-		gameServersCmdPath := os.Getenv("GAME_SERVERS_CMD_PATH")
-
-		output, err := exec.Command("powershell", "-WindowStyle", "Hidden", "-Command", gameServersCmdPath+"enshrouded_info.ps1").Output()
-		if err != nil {
-			fmt.Printf("Error executing enshrouded_info: %s", err.Error())
-			s.ChannelMessageSend(m.ChannelID, "Enshrouded info error !")
-			return
-		}
-		s.ChannelMessageSend(m.ChannelID, string(output))
-	}
-
-	if m.Content == "palserver_restart" {
-		gameServersCmdPath := os.Getenv("GAME_SERVERS_CMD_PATH")
-
-		cmd := exec.Command("powershell", "-WindowStyle", "Hidden", "-Command", gameServersCmdPath+"palserver_restart.ps1")
-		err := cmd.Run()
-		if err != nil {
-			fmt.Printf("Error executing palserver_restart: %s", err.Error())
-			s.ChannelMessageSend(m.ChannelID, "Palserver restart error !")
-			return
-		}
-		s.ChannelMessageSend(m.ChannelID, "Palserver restarted !")
-	}
-
-	if m.Content == "palserver_info" {
-		gameServersCmdPath := os.Getenv("GAME_SERVERS_CMD_PATH")
-
-		output, err := exec.Command("powershell", "-WindowStyle", "Hidden", "-Command", gameServersCmdPath+"palserver_info.ps1").Output()
-		if err != nil {
-			fmt.Printf("Error executing palserver_info: %s", err.Error())
-			s.ChannelMessageSend(m.ChannelID, "Palserver info error !")
-			return
-		}
-		s.ChannelMessageSend(m.ChannelID, string(output))
-	}
+	router := cmds.RouterCommands()
+	router.Handle(s, m)
 }
