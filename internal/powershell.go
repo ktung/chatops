@@ -10,3 +10,8 @@ func ExecutePowerShellCommand(command string) (string, error) {
 	}
 	return string(output), nil
 }
+
+func RunPowerShellCommand(command string) (error) {
+	err := exec.Command("powershell", "-WindowStyle", "Hidden", "-Command", command).Run()
+	return err
+}

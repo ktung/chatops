@@ -4,7 +4,6 @@ import (
 	"chatops/internal"
 	"fmt"
 	"os"
-	"os/exec"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -29,10 +28,9 @@ func PalworldInfoCommand(s *discordgo.Session, m *discordgo.MessageCreate) error
 
 func PalworldRestartCommand(s *discordgo.Session, m *discordgo.MessageCreate) error {
 	gameServersCmdPath := os.Getenv("GAME_SERVERS_CMD_PATH")
+	cmd := gameServersCmdPath + "palserver_restart.ps1"
 
-	cmd := exec.Command("powershell", "-WindowStyle", "Hidden", "-Command", gameServersCmdPath+"palserver_restart.ps1")
-
-	err := cmd.Run()
+	err := internal.RunPowerShellCommand(cmd)
 	if err != nil {
 		fmt.Printf("Error executing palserver_restart: %s", err.Error())
 		_, err := s.ChannelMessageSend(m.ChannelID, "Palserver restart error !")
