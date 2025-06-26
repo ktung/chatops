@@ -43,3 +43,21 @@ func EnshroudedRestartCommand(s *discordgo.Session, m *discordgo.MessageCreate) 
 	s.ChannelMessageSend(m.ChannelID, "Enshrouded restarted !")
 	return nil
 }
+
+func EnshroudedUpdateCommand(s *discordgo.Session, m *discordgo.MessageCreate) error {
+	gameServersCmdPath := os.Getenv("GAME_SERVERS_CMD_PATH")
+	cmd := gameServersCmdPath + "enshrouded_update.ps1"
+
+	err := internal.RunPowerShellCommand(cmd)
+	if err != nil {
+		fmt.Printf("Error executing enshrouded_update: %s", err.Error())
+		_, err := s.ChannelMessageSend(m.ChannelID, "Enshrouded update error !")
+		if err != nil {
+			fmt.Printf("Error sending message: %s", err.Error())
+		}
+		return err
+	}
+
+	s.ChannelMessageSend(m.ChannelID, "Enshrouded updated !")
+	return nil
+}

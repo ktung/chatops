@@ -19,6 +19,7 @@ func NewRouterCommands() *CommandsMap {
 			"break":              BreakCommand,
 			"enshrouded_info":    EnshroudedInfoCommand,
 			"enshrouded_restart": EnshroudedRestartCommand,
+			"enshrouded_update":  EnshroudedUpdateCommand,
 			"palserver_info":     PalworldInfoCommand,
 			"palserver_restart":  PalworldRestartCommand,
 		},
