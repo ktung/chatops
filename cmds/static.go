@@ -1,7 +1,10 @@
 package cmds
 
 import (
+	"fmt"
 	"log"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
@@ -25,14 +28,27 @@ func NewHelpCommand(router *CommandsMap) CommandHandler {
 }
 
 func WorkCommand(s *discordgo.Session, m *discordgo.MessageCreate) error {
-	_, err := s.ChannelMessageSend(m.ChannelID, "Back to work ! See you in 1 hour !")
+	minutes := 60 // Default to 60 minutes
+	messageFields := strings.Fields(m.Content)
+	if len(messageFields) == 0 {
+		return nil
+	}
+
+	args := messageFields[1:]
+	if len(args) > 0 {
+		if n, err := strconv.Atoi(args[0]); err == nil && n > 0 {
+			minutes = n
+		}
+	}
+
+	_, err := s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Back to work ! See you in %d minutes !", minutes))
 	if err != nil {
 		log.Printf("Error sending work message: %v", err)
 		return err
 	}
 
 	go func() {
-		time.Sleep(1*time.Hour)
+		time.Sleep(time.Duration(minutes) * time.Minute)
 
 		_, err := s.ChannelMessageSend(m.ChannelID, "Work done !")
 		if err != nil {
@@ -44,14 +60,27 @@ func WorkCommand(s *discordgo.Session, m *discordgo.MessageCreate) error {
 }
 
 func BreakCommand(s *discordgo.Session, m *discordgo.MessageCreate) error {
-	_, err := s.ChannelMessageSend(m.ChannelID, "Let's take a 15 minutes break")
+	minutes := 15 // Default to 15 minutes
+	messageFields := strings.Fields(m.Content)
+	if len(messageFields) == 0 {
+		return nil
+	}
+
+	args := messageFields[1:]
+	if len(args) > 0 {
+		if n, err := strconv.Atoi(args[0]); err == nil && n > 0 {
+			minutes = n
+		}
+	}
+
+	_, err := s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Let's take a %d minutes break", minutes))
 	if err != nil {
 		log.Printf("Error sending break message: %v", err)
 		return err
 	}
 
 	go func() {
-		time.Sleep(15*time.Minute)
+		time.Sleep(time.Duration(minutes)*time.Minute)
 
 		_, err := s.ChannelMessageSend(m.ChannelID, "Break done !")
 		if err != nil {

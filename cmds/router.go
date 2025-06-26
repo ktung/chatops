@@ -2,6 +2,7 @@ package cmds
 
 import (
 	"log"
+	"strings"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -30,7 +31,13 @@ func NewRouterCommands() *CommandsMap {
 }
 
 func (c *CommandsMap) Handle(s *discordgo.Session, m *discordgo.MessageCreate) {
-	if handler, ok := c.handlers[m.Content]; ok {
+	messageFields := strings.Fields(m.Content)
+	if len(messageFields) == 0 {
+		return
+	}
+
+	cmd := messageFields[0]
+	if handler, ok := c.handlers[cmd]; ok {
 		if err := handler(s, m); err != nil {
 			log.Printf("Error handling command: %v", err)
 		}
